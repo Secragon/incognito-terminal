@@ -45,7 +45,7 @@ Download the package for your architecture from the
 Install the downloaded file:
 
 ```sh
-sudo apt install ./incognito-terminal_1.2.3-1_amd64.deb
+sudo apt install ./incognito-terminal_1.2.4-1_amd64.deb
 ```
 
 Replace `amd64` with `arm64` when appropriate. The package adds **Incognito
@@ -55,7 +55,7 @@ application menus. It also installs the `incognito-terminal` command.
 You can verify a download with the `SHA256SUMS` file included in every release:
 
 ```sh
-package=incognito-terminal_1.2.3-1_amd64.deb
+package=incognito-terminal_1.2.4-1_amd64.deb
 grep "  ./${package}$" SHA256SUMS | sha256sum --check
 ```
 

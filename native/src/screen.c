@@ -484,9 +484,15 @@ void screen_resize(Screen *s, int rows, int cols, const Settings *settings) {
 static void color(Buffer *out, const VTermColor *c, bool bg) {
     if ((bg && VTERM_COLOR_IS_DEFAULT_BG(c)) || (!bg && VTERM_COLOR_IS_DEFAULT_FG(c)))
         return;
-    if (VTERM_COLOR_IS_INDEXED(c))
-        buf_printf(out, "\033[%d;5;%um", bg ? 48 : 38, c->indexed.idx);
-    else
+    if (VTERM_COLOR_IS_INDEXED(c)) {
+        unsigned index = c->indexed.idx;
+        if (index < 8)
+            buf_printf(out, "\033[%um", (bg ? 40U : 30U) + index);
+        else if (index < 16)
+            buf_printf(out, "\033[%um", (bg ? 100U : 90U) + index - 8U);
+        else
+            buf_printf(out, "\033[%d;5;%um", bg ? 48 : 38, index);
+    } else
         buf_printf(out, "\033[%d;2;%u;%u;%um", bg ? 48 : 38, c->rgb.red, c->rgb.green, c->rgb.blue);
 }
 static void style(Buffer *out, const VTermScreenCell *v) {

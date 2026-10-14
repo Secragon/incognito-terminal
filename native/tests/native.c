@@ -149,6 +149,21 @@ static void screen_cases(void) {
     Screen s;
     screen_init(&s, 5, 40);
     Buffer frame = {0};
+    const char *palette =
+        "\033[33mY\033[43mB\033[93mH\033[103mI\033[38;5;200mP\033[38;2;1;2;3mT";
+    screen_feed(&s, palette, strlen(palette));
+    screen_render(&s, &menu, &frame);
+    CHECK(strstr(frame.data, "\033[33m"));
+    CHECK(strstr(frame.data, "\033[43m"));
+    CHECK(strstr(frame.data, "\033[93m"));
+    CHECK(strstr(frame.data, "\033[103m"));
+    CHECK(strstr(frame.data, "\033[38;5;200m"));
+    CHECK(strstr(frame.data, "\033[38;2;1;2;3m"));
+    CHECK(!strstr(frame.data, "\033[38;5;3m"));
+    CHECK(!strstr(frame.data, "\033[48;5;3m"));
+    screen_free(&s);
+    buf_free(&frame);
+    screen_init(&s, 5, 40);
     const char *source = "cmd -p UNIQUE_SECRET next";
     for (const char *p = source; *p; p++) {
         screen_feed(&s, p, 1);

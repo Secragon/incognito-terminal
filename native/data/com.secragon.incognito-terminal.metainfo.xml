@@ -39,6 +39,11 @@
     <category>TerminalEmulator</category>
   </categories>
   <releases>
+    <release version="1.2.4" date="2026-10-15">
+      <description>
+        <p>Preserve terminal profile colors for the standard ANSI palette.</p>
+      </description>
+    </release>
     <release version="1.2.3" date="2026-10-15">
       <description>
         <p>Improve installation, removal, and user documentation.</p>

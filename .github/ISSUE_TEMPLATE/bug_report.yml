@@ -10,7 +10,7 @@ body:
     id: version
     attributes:
       label: Version
-      placeholder: "1.2.3"
+      placeholder: "1.2.4"
     validations:
       required: true
   - type: input

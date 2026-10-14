@@ -3,6 +3,11 @@
 All notable user-visible changes are recorded here. Versions follow Semantic
 Versioning.
 
+## 1.2.4 - 2026-10-15
+
+- Preserve terminal profile colors for the standard ANSI foreground and
+  background palette.
+
 ## 1.2.3 - 2026-10-15
 
 - Replace the project README with a user-focused installation and usage guide.
