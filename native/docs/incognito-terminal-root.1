@@ -1,0 +1,23 @@
+.\" Copyright 2026 Secragon Ltd
+.\" SPDX-License-Identifier: Apache-2.0
+.TH INCOGNITO-TERMINAL-ROOT 1 "2026-10-15" "Incognito Terminal 1.2.3" "User Commands"
+.SH NAME
+incognito-terminal-root \- start an authenticated root Incognito Terminal
+.SH SYNOPSIS
+.B incognito-terminal-root
+.RI [ options ]
+.SH DESCRIPTION
+.B incognito-terminal-root
+uses
+.BR pkexec (1)
+to start
+.BR incognito-terminal (1)
+with root's configuration and shell environment. Any arguments are forwarded to
+.BR incognito-terminal (1).
+.PP
+See
+.BR incognito-terminal (1)
+for privacy behavior, options, files, limitations, and exit status.
+.SH SEE ALSO
+.BR incognito-terminal (1),
+.BR pkexec (1)

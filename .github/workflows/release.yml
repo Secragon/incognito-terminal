@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Verify tag version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          version=$(cat native/VERSION)
+          test "${GITHUB_REF_NAME}" = "v${version}"
+
+      - name: Install build and validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            appstream build-essential desktop-file-utils lintian mandoc perl \
+            python3-venv shellcheck zsh
+
+      - name: Install integration-test dependencies
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install --disable-pip-version-check -r requirements-test.txt
+
+      - name: Test and build release artifacts
+        run: make ci
+
+      - name: Stage architecture artifacts
+        shell: bash
+        run: |
+          mkdir staging
+          deb=$(find native/dist -maxdepth 1 -name '*.deb' -print -quit)
+          test "$(dpkg-deb -f "$deb" Architecture)" = "${{ matrix.arch }}"
+          cp "$deb" staging/
+          if [[ "${{ matrix.arch }}" == amd64 ]]; then
+            cp native/dist/*.tar.gz staging/
+          fi
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ matrix.arch }}
+          path: staging/*
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
+
+      - name: Create combined checksums
+        shell: bash
+        run: |
+          cd release
+          sha256sum ./*.deb ./*.tar.gz | sort --key=2 > SHA256SUMS
+          sha256sum --check SHA256SUMS
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          gh release create "$GITHUB_REF_NAME" release/* \
+            --verify-tag \
+            --title "Incognito Terminal $version" \
+            --generate-notes

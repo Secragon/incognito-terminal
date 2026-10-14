@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.png binary
+
+# Bundled, pinned upstream source should not dominate GitHub language statistics.
+native/vendor/** linguist-vendored

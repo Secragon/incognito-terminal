@@ -1,0 +1,15 @@
+# Copyright 2026 Secragon Ltd
+# SPDX-License-Identifier: Apache-2.0
+
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Incognito Terminal
+GenericName=Private Terminal Session
+Comment=Open a terminal session with masking and history controls
+Exec=incognito-terminal
+Icon=incognito-terminal
+Terminal=true
+Categories=System;TerminalEmulator;
+Keywords=terminal;shell;privacy;history;password;secret;
+StartupNotify=false

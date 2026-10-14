@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-package:
+    name: ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install build and validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            appstream build-essential desktop-file-utils lintian mandoc perl \
+            python3-venv shellcheck zsh
+
+      - name: Install integration-test dependencies
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install --disable-pip-version-check -r requirements-test.txt
+
+      - name: Run complete validation
+        run: make ci
+
+      - name: Verify package architecture
+        run: |
+          deb=$(find native/dist -maxdepth 1 -name '*.deb' -print -quit)
+          test "$(dpkg-deb -f "$deb" Architecture)" = "${{ matrix.arch }}"
+
+      - name: Upload package preview
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: incognito-terminal-${{ matrix.arch }}
+          path: |
+            native/dist/*.deb
+            native/dist/*.tar.gz
+            native/dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+  sanitizers:
+    name: AddressSanitizer and UndefinedBehaviorSanitizer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential perl
+
+      - name: Run native sanitizer checks
+        run: make -C native sanitize

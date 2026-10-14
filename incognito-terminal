@@ -1,0 +1,10 @@
+#!/bin/sh
+# Copyright 2026 Secragon Ltd
+# SPDX-License-Identifier: Apache-2.0
+# Run the native binary from the checkout.
+project_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+if [ ! -x "$project_dir/native/build/incognito-terminal" ]; then
+    printf '%s\n' 'incognito-terminal: build first with make' >&2
+    exit 1
+fi
+exec "$project_dir/native/build/incognito-terminal" "$@"

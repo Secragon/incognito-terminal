@@ -1,0 +1,93 @@
+.\" Copyright 2026 Secragon Ltd
+.\" SPDX-License-Identifier: Apache-2.0
+.TH INCOGNITO-TERMINAL 1 "2026-10-15" "Incognito Terminal 1.2.3" "User Commands"
+.SH NAME
+incognito-terminal \- run a terminal session with display masking and history
+controls
+.SH SYNOPSIS
+.B incognito-terminal
+.RI [ options ]
+.RI [ --
+.IR shell
+.RI [ arguments ...]]
+.SH DESCRIPTION
+.B incognito-terminal
+is a user-space PTY wrapper.  It passes input to the child shell unchanged,
+reconstructs the terminal display, and masks values associated with configured
+triggers before drawing them on the outer terminal.
+.PP
+Press F2 inside a session to configure masking triggers, command exceptions,
+the privacy state, display style, and the history preference for future
+sessions.
+.PP
+P opens the Privacy submenu. Select On, Off, or Crazy with Up/Down or O/F/C,
+then press Enter to apply; Esc cancels. On masks configured sensitive values;
+Off shows original text; Crazy masks all Bash/Zsh command input, including
+command exceptions, while keeping prompts, whitespace, and command output
+visible.
+The status bar and menu remain readable. Sessions start On.
+.PP
+M opens Privacy mode: Asterisks, Obfuscation, or Emoji. The style is saved and
+applies to On and Crazy. Asterisks are green. Random characters and yellow
+smiling faces remain stable on redraw. Emoji masking preserves terminal column
+positions, using a narrow smiley for an odd column.
+.PP
+S opens Shortcuts. Edit the Mask next value or Hold to reveal binding as text,
+then press Enter to save. Defaults are Alt+I and Alt+U.
+Ctrl+M cannot be assigned because terminals encode it as Enter.
+Manual masking skips leading spaces and preserves shell quote delimiters.
+It uses the selected display style independently of automatic triggers,
+command exceptions, or Privacy Off. The current value ends at its shell
+boundary.
+.PP
+Hold reveal exposes concealed text only until release or focus loss.  Enhanced
+terminals use exact release events.  On legacy terminals, key repeat keeps the
+text visible and it is concealed shortly after repeat stops; a tap auto-hides.
+.PP
+In Triggers and Exceptions, Space enables or disables the entire list without
+removing entries. List switches and shortcut bindings persist across restarts.
+.PP
+For a trigger whose value follows whitespace, a shell backslash-newline
+continuation and indentation before the value are handled automatically.  This
+behavior is always active and does not change the command sent to Bash or Zsh.
+.SH OPTIONS
+.TP
+.B --clean
+Skip Bash or Zsh user startup files for this session.
+.TP
+.BI --history " normal|session|off"
+Override the saved history preference for this launch.  Normal delegates to the
+shell's existing behavior.  Session keeps recall in memory but does not save it
+to the normal history file.  Off disables recall after each completed command
+and does not save commands to the normal history file.
+.TP
+.BR -h ", " --help
+Show command-line help and exit.
+.TP
+.B --version
+Show the program version and exit.
+.TP
+.B --
+End wrapper options.  Remaining arguments select the shell and its arguments.
+If no shell is given, the program uses
+.B $SHELL
+or falls back to
+.BR /bin/bash .
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/incognito-terminal/config.json
+Per-user settings when XDG_CONFIG_HOME is set.
+.TP
+.I ~/.config/incognito-terminal/config.json
+Default per-user settings location.
+.SH LIMITATIONS
+Display masking does not alter command arguments.  Sensitive values may remain
+visible through process inspection, application logs, nested sessions, or other
+channels.  History modes control supported Bash and Zsh sessions only.  They do
+not erase existing history files or control independent history services.
+.SH EXIT STATUS
+The wrapper normally returns the child shell's exit status.  Startup or terminal
+setup failures return a nonzero status.
+.SH SEE ALSO
+.BR bash (1),
+.BR zsh (1)

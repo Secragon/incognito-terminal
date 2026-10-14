@@ -1,0 +1,16 @@
+# Copyright 2026 Secragon Ltd
+# SPDX-License-Identifier: Apache-2.0
+
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Incognito Terminal (Root)
+GenericName=Privileged Private Terminal Session
+Comment=Open an elevated terminal session with masking and history controls
+Exec=incognito-terminal-root
+TryExec=incognito-terminal-root
+Icon=incognito-terminal-root
+Terminal=true
+Categories=System;TerminalEmulator;
+Keywords=terminal;shell;privacy;history;root;administrator;
+StartupNotify=false

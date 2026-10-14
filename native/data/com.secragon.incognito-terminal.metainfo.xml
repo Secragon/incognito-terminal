@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2026 Secragon Ltd
+
+  Copying and distribution of this file, with or without modification, are
+  permitted in any medium without royalty provided the copyright notice and
+  this notice are preserved. This file is offered as-is, without any warranty.
+
+  SPDX-License-Identifier: FSFAP
+-->
+<component type="desktop-application">
+  <id>com.secragon.incognito-terminal</id>
+  <name>Incognito Terminal</name>
+  <summary>Mask sensitive command arguments while you type</summary>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <developer id="com.secragon">
+    <name>Secragon Ltd</name>
+  </developer>
+  <description>
+    <p>
+      Incognito Terminal keeps passwords, tokens, and other sensitive values
+      out of sight while commands are typed or pasted. The original command
+      still runs normally and only once.
+    </p>
+    <p>
+      It also provides configurable masking styles, manual masking, command
+      exceptions, and normal, session-only, or disabled shell history modes.
+    </p>
+  </description>
+  <launchable type="desktop-id">incognito-terminal.desktop</launchable>
+  <provides>
+    <binary>incognito-terminal</binary>
+  </provides>
+  <url type="homepage">https://github.com/Secragon/incognito-terminal</url>
+  <url type="bugtracker">https://github.com/Secragon/incognito-terminal/issues</url>
+  <categories>
+    <category>System</category>
+    <category>TerminalEmulator</category>
+  </categories>
+  <releases>
+    <release version="1.2.3" date="2026-10-15">
+      <description>
+        <p>Improve installation, removal, and user documentation.</p>
+      </description>
+    </release>
+    <release version="1.2.2" date="2026-10-14">
+      <description>
+        <p>Add portable configurable shortcuts and multiline masking.</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
