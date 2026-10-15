@@ -1227,6 +1227,28 @@ static void agile_controls(void) {
             buf_free(&out);
         }
     }
+    CHECK(shortcut_parse("Ctrl+Shift+I", &settings.shortcuts[SHORTCUT_MASK]));
+    {
+        Menu modified;
+        menu_init(&modified, &settings, NORMAL);
+        Router modified_router = {0};
+        Buffer modified_out = {0};
+        router_feed(&modified_router, &modified, &modified_out, "\033[27;6;73~", 10);
+        CHECK(modified_out.len == 7 && !memcmp(modified_out.data, "\033[99;1~", 7));
+        CHECK(strstr(modified.notification, "Masked typing"));
+        modified_out.len = 0;
+        router_feed(&modified_router, &modified, &modified_out, "\033[Z", 3);
+        CHECK(modified_out.len == 7 && !memcmp(modified_out.data, "\033[99;1~", 7));
+        modified_out.len = 0;
+        router_feed(&modified_router, &modified, &modified_out, "\033[73;6u", 7);
+        CHECK(modified_out.len == 7 && !memcmp(modified_out.data, "\033[99;1~", 7));
+        modified_out.len = 0;
+        router_feed(&modified_router, &modified, &modified_out, "\033[9;2u", 6);
+        CHECK(modified_out.len == 7 && !memcmp(modified_out.data, "\033[99;1~", 7));
+        buf_free(&modified_router.pending);
+        buf_free(&modified_out);
+    }
+    settings_default(&settings);
     Menu m;
     menu_init(&m, &settings, NORMAL);
     Router r = {0};

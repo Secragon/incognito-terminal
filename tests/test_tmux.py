@@ -74,11 +74,17 @@ class TmuxTests(unittest.TestCase):
                     session.send(F2, duration=.2)
                     session.send(b"\x15")
                     session.send("echo value ", duration=.1)
-                    session.send(b"\x1b[105;6uCSI_SECRET")
+                    # tmux 3.4 cannot decode CSI-u from its parent terminal.
+                    # Incognito pops that terminal mode for old tmux, so
+                    # emulate the terminal's resulting xterm encoding.
+                    modified_i = (b"\x1b[27;6;73~" if b"\x1b[<u" in session.raw
+                                  else b"\x1b[105;6u")
+                    session.send(modified_i + b"CSI_SECRET")
                     session.wait_for("echo value **********")
                     self.assertNotIn("CSI_SECRET", session.text())
 
-                    session.send(b"\x03\x02c", duration=.5)
+                    session.send(b"\x03", duration=.2)
+                    session.send(b"\x02c", duration=.5)
                     offset = len(session.raw)
                     session.send("echo -p WINDOW_SECRET", duration=.2)
                     session.wait_for("echo -p *************")

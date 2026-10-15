@@ -221,7 +221,7 @@ static void clear_wrapper_identity(void) {
     unsetenv("INCOGNITO_TMUX_PANE");
 }
 
-static int configure_server(const char *real, const char *command) {
+static int configure_server(const char *real, const char *command, bool *legacy_keys) {
     const char *set_default[] = {"set-option", "-g", "default-command", command, NULL};
     const char *set_extended[] = {"set-option", "-s", "extended-keys", "always", NULL};
     const char *set_format[] = {"set-option", "-s", "extended-keys-format", "csi-u", NULL};
@@ -235,7 +235,7 @@ static int configure_server(const char *real, const char *command) {
         if (run_tmux(real, fallback, true))
             return 1;
     }
-    (void)run_tmux(real, set_format, true);
+    *legacy_keys = run_tmux(real, set_format, true) != 0;
     char features[4096];
     if (capture_tmux(real, show_features, features, sizeof(features)) ||
         !strstr(features, "xterm-256color:extkeys"))
@@ -262,10 +262,11 @@ static int protected_client(const char *real, const char *command) {
             return 1;
         }
     }
-    if (configure_server(real, command))
+    bool legacy_keys;
+    if (configure_server(real, command, &legacy_keys))
         return 1;
     const char *attach[] = {"attach-session", "-t", "=" TMUX_SESSION, NULL};
-    if (!transport_signal('T')) {
+    if (!transport_signal(legacy_keys ? 'L' : 'T')) {
         fputs("incognito-terminal: could not activate tmux transport\n", stderr);
         return 1;
     }

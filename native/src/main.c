@@ -270,7 +270,7 @@ static int session(const Settings *settings) {
             char modes[32];
             ssize_t count = read(control_fd, modes, sizeof(modes));
             for (ssize_t k = 0; k < count; k++) {
-                if (modes[k] == 'T' && !transport) {
+                if ((modes[k] == 'T' || modes[k] == 'L') && !transport) {
                     transport = true;
                     ready = true; /* Pane wrappers enforce the selected history mode. */
                     if (dimensions(&rows, &cols, true)) {
@@ -281,7 +281,11 @@ static int session(const Settings *settings) {
                     ws.ws_row = (unsigned short)rows;
                     ws.ws_col = (unsigned short)cols;
                     ioctl(master, TIOCSWINSZ, &ws);
-                    const char *clear = "\033[0m\033[2J\033[H";
+                    /* tmux before 3.5 understands xterm modifyOtherKeys but
+                     * not CSI-u input. Temporarily pop the Kitty keyboard
+                     * mode so the terminal uses the compatible format. */
+                    const char *clear =
+                        modes[k] == 'L' ? "\033[<u\033[0m\033[2J\033[H" : "\033[0m\033[2J\033[H";
                     if (write_all(STDOUT_FILENO, clear, strlen(clear))) {
                         result = 1;
                         alive = false;

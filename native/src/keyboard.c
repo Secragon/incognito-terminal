@@ -247,11 +247,21 @@ int keyboard_sequence(Menu *m, Buffer *out, const char *bytes, size_t len) {
         }
         if (code < 0 || (code > 0x10ffff && code <= KEY_FUNCTION_BASE))
             return 0;
+        if (code == 9 && mods == 1 && action(m, out, 'i', 4 | 1, event))
+            return (int)end + 1;
+        if ((mods & 1) && code >= 'A' && code <= 'Z') {
+            if (!parts[0][1])
+                parts[0][1] = code;
+            code = tolower(code);
+        }
         key_output(m, out, code, mods, event, parts[0][1]);
         return (int)end + 1;
     }
     if (final == '~' && code == 27 && part == 2) {
-        key_output(m, out, parts[2][0], mods, event, 0);
+        int key = parts[2][0], shifted = key;
+        if ((mods & 1) && key >= 'A' && key <= 'Z')
+            key = tolower(key);
+        key_output(m, out, key, mods, event, shifted);
         return (int)end + 1;
     }
     int fn = final >= 'P' && final <= 'S' && code == 1 ? final - 'P' + 1
@@ -259,6 +269,15 @@ int keyboard_sequence(Menu *m, Buffer *out, const char *bytes, size_t len) {
                                                        : 0;
     if (fn) {
         key_output(m, out, KEY_FUNCTION_BASE + fn, mods, event, 0);
+        return (int)end + 1;
+    }
+    if (final == 'Z' && !params[0]) {
+        /* tmux before 3.5 cannot represent Ctrl+Shift+I distinctly and
+         * collapses it to BackTab. Recover it only when the user actually
+         * configured that shortcut; otherwise preserve ordinary BackTab. */
+        if (action(m, out, 'i', 4 | 1, 1))
+            return (int)end + 1;
+        key_output(m, out, 9, 1, 1, 0);
         return (int)end + 1;
     }
     if (strchr("ABCDHF", final) && (code == 1 || !params[0])) {

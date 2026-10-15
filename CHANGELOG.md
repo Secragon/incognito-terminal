@@ -7,6 +7,8 @@ Versioning.
 
 - Replace the terse command-line help with a user-focused guide to options,
   history modes, session controls, and common launch examples.
+- Preserve configurable modified-key shortcuts through tmux 3.4 as shipped by
+  Ubuntu 24.04, while retaining CSI-u support on tmux 3.5 and newer.
 
 ## 1.3.2 - 2026-10-15
 
