@@ -52,8 +52,13 @@ jobs:
             python3 - <<'PY'
           from pathlib import Path
 
-          lines = Path("ci-validation.log").read_text(errors="replace").splitlines()[-25:]
-          message = "\n".join(lines)
+          lines = Path("ci-validation.log").read_text(errors="replace").splitlines()
+          starts = [i for i, line in enumerate(lines) if line.startswith(("FAIL: ", "ERROR: "))]
+          selected = []
+          for start in starts:
+              selected.extend(lines[start:start + 18])
+          selected.extend(lines[-6:])
+          message = "\n".join(selected if starts else lines[-25:])
           message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
           print(f"::error title=Hosted validation failure::{message}")
           PY
