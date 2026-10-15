@@ -20,6 +20,10 @@ The settings are available from a simple **F2** menu inside the session. No
 shell customization is required, and your saved choices are restored the next
 time you start Incognito Terminal.
 
+<p align="center">
+  <img src="demo.gif" alt="Incognito Terminal masking demonstration">
+</p>
+
 ## What you can do
 
 - Hide values recognized by your own configurable triggers.
