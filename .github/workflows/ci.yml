@@ -52,7 +52,7 @@ jobs:
             python3 - <<'PY'
           from pathlib import Path
 
-          lines = Path("ci-validation.log").read_text(errors="replace").splitlines()[-120:]
+          lines = Path("ci-validation.log").read_text(errors="replace").splitlines()[-25:]
           message = "\n".join(lines)
           message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
           print(f"::error title=Hosted validation failure::{message}")
