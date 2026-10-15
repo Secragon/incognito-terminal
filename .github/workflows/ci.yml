@@ -43,7 +43,22 @@ jobs:
           .venv/bin/python -m pip install --disable-pip-version-check -r requirements-test.txt
 
       - name: Run complete validation
-        run: make ci
+        shell: bash
+        run: |
+          set +e
+          make ci 2>&1 | tee ci-validation.log
+          status=${PIPESTATUS[0]}
+          if (( status != 0 )); then
+            python3 - <<'PY'
+          from pathlib import Path
+
+          lines = Path("ci-validation.log").read_text(errors="replace").splitlines()[-120:]
+          message = "\n".join(lines)
+          message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+          print(f"::error title=Hosted validation failure::{message}")
+          PY
+          fi
+          exit "$status"
 
       - name: Verify package architecture
         run: |
