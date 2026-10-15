@@ -478,6 +478,8 @@ void screen_mask(Screen *s, const Settings *settings) {
     free(hidden);
 }
 void screen_resize(Screen *s, int rows, int cols, const Settings *settings) {
+    manual_update(s, false);
+    manual_cancel_unstarted(s);
     screen_mask(s, settings);
     vterm_set_size(s->vt, rows, cols);
 }

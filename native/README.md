@@ -56,6 +56,13 @@ Press **F2** during a session to open the settings menu.
 - **History** chooses Normal, Session only, or Off for new sessions.
 - **Shortcuts** changes the keys used for manual masking and temporary reveal.
 
+Run `tmux` inside Incognito Terminal to open a protected session. Privacy
+controls remain available in panes and windows created with tmux's default
+command, including when a Bash or Zsh startup file launches tmux automatically.
+A manual launch returns to the Incognito shell after detach or exit. With
+`exec tmux` in a startup file, reopening Incognito Terminal reattaches after a
+detach. Ordinary tmux sessions remain separate.
+
 Press **Alt+I** to conceal the next value manually. Hold **Alt+U** to reveal
 concealed text temporarily. Both shortcuts can be changed from the menu.
 
@@ -89,8 +96,10 @@ program, process inspection tools, remote systems, audit services, or
 application logs.
 
 Use disposable values to check your workflow before handling sensitive data.
-Complex shell expansions, nested terminal sessions, full-screen applications,
-and shell plugins can behave differently.
+Complex shell expansions, nested terminal sessions other than the managed tmux
+session, full-screen applications, and shell plugins can behave differently.
+A tmux pane or window started with an explicit command bypasses the protected
+default command and is not managed.
 
 For the complete user guide, releases, issue tracker, and security reporting,
 visit <https://github.com/Secragon/incognito-terminal>.

@@ -1,6 +1,6 @@
 .\" Copyright 2026 Secragon Ltd
 .\" SPDX-License-Identifier: Apache-2.0
-.TH INCOGNITO-TERMINAL 1 "2026-10-15" "Incognito Terminal 1.2.4" "User Commands"
+.TH INCOGNITO-TERMINAL 1 "2026-10-15" "Incognito Terminal 1.3.3" "User Commands"
 .SH NAME
 incognito-terminal \- run a terminal session with display masking and history
 controls
@@ -50,6 +50,19 @@ removing entries. List switches and shortcut bindings persist across restarts.
 For a trigger whose value follows whitespace, a shell backslash-newline
 continuation and indentation before the value are handled automatically.  This
 behavior is always active and does not change the command sent to Bash or Zsh.
+.SS tmux
+Run
+.B tmux
+without arguments inside Incognito Terminal to open or reattach its protected
+tmux session.  Masking, the F2 menu, shortcuts, Crazy mode, and history controls
+remain active in panes and windows created with tmux's default command.  This
+also applies when a Bash or Zsh startup file launches tmux automatically.
+.PP
+For a manual launch, detaching or exiting tmux returns to the original
+Incognito shell.  If a startup file uses
+.BR "exec tmux" ,
+reopening Incognito Terminal reattaches after a detach.  Ordinary tmux sessions
+use a separate server and are not changed.
 .SH OPTIONS
 .TP
 .B --clean
@@ -82,8 +95,10 @@ Per-user settings when XDG_CONFIG_HOME is set.
 Default per-user settings location.
 .SH LIMITATIONS
 Display masking does not alter command arguments.  Sensitive values may remain
-visible through process inspection, application logs, nested sessions, or other
-channels.  History modes control supported Bash and Zsh sessions only.  They do
+visible through process inspection, application logs, unmanaged nested
+sessions, or other channels.  History modes control supported Bash and Zsh
+sessions only.  A tmux pane or window started with an explicit command bypasses
+the protected default command and is not managed.  History modes do
 not erase existing history files or control independent history services.
 .SH EXIT STATUS
 The wrapper normally returns the child shell's exit status.  Startup or terminal

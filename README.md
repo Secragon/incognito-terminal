@@ -34,6 +34,7 @@ time you start Incognito Terminal.
 - Keep normal shell history, keep it only for the current session, or disable it.
 - Add command exceptions to avoid masking options that do not contain secrets.
 - Use your existing Bash or Zsh setup and continue editing commands normally.
+- Keep the same privacy controls in tmux panes and windows that use its default command.
 
 ## Install
 
@@ -49,7 +50,7 @@ Download the package for your architecture from the
 Install the downloaded file:
 
 ```sh
-sudo apt install ./incognito-terminal_1.2.4-1_amd64.deb
+sudo apt install ./incognito-terminal_1.3.3-1_amd64.deb
 ```
 
 Replace `amd64` with `arm64` when appropriate. The package adds **Incognito
@@ -59,7 +60,7 @@ application menus. It also installs the `incognito-terminal` command.
 You can verify a download with the `SHA256SUMS` file included in every release:
 
 ```sh
-package=incognito-terminal_1.2.4-1_amd64.deb
+package=incognito-terminal_1.3.3-1_amd64.deb
 grep "  ./${package}$" SHA256SUMS | sha256sum --check
 ```
 
@@ -108,6 +109,25 @@ incognito-terminal --clean -- zsh
 The top-right indicator shows the current privacy state. Press **F2** whenever
 you want to change a setting. Type `exit` or press **Ctrl+D** at an empty prompt
 to close the session.
+
+### Use tmux
+
+If tmux is installed, run it normally inside Incognito Terminal:
+
+```sh
+tmux
+```
+
+Incognito Terminal opens its protected tmux session and keeps masking, the F2
+menu, shortcuts, Crazy mode, and history controls active in panes and windows
+created with tmux's default command. The same behavior applies when your Bash
+or Zsh startup file launches `tmux` automatically.
+
+Detach and run `tmux` again to reattach. When you started tmux manually,
+detaching or exiting it returns you to the original Incognito shell. If your
+startup file uses `exec tmux`, reopen Incognito Terminal to reattach after a
+detach. Your ordinary tmux sessions stay separate and keep their existing
+settings.
 
 ## Everyday examples
 
@@ -264,9 +284,11 @@ remove the original value from the command itself. A secret may still be
 available to the program receiving it, process inspection tools, remote
 systems, audit services, or application logs.
 
-Complex shell expansions, nested terminal sessions, full-screen terminal
-applications, and shell plugins can behave differently. Check your own workflow
-with disposable values before relying on it during sensitive work.
+Complex shell expansions, nested terminal sessions other than the managed tmux
+session, full-screen terminal applications, and shell plugins can behave
+differently. A tmux pane or window started with an explicit command bypasses
+the protected default command and is not managed. Check your own workflow with
+disposable values before relying on it during sensitive work.
 
 Turning Privacy Off can reveal the original command currently on screen. Use
 History Session only or Off when you also want to prevent new commands from

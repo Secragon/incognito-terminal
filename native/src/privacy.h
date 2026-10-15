@@ -197,6 +197,7 @@ void screen_mask(Screen *s, const Settings *settings);
 void screen_resize(Screen *s, int rows, int cols, const Settings *settings);
 void screen_render(Screen *s, const Menu *m, Buffer *out);
 void manual_update(Screen *s, bool arm);
+void manual_cancel_unstarted(Screen *s);
 void manual_arm_at(Screen *s, size_t offset);
 size_t manual_cursor_offset(const Screen *s);
 void manual_finish(Screen *s);
@@ -213,4 +214,10 @@ typedef struct {
 int startup_prepare(Startup *s, char **argv, bool clean, HistoryMode mode);
 void startup_cleanup(Startup *s);
 bool startup_ready(const Startup *s);
+
+/* Transparent tmux integration.  A private tmux shim is placed ahead of the
+ * real client only for shells started by Incognito Terminal. */
+int tmux_prepare(const Startup *s, const char *shell, bool clean, int history_override);
+bool tmux_shim_invocation(const char *argv0);
+int tmux_shim_main(int argc, char **argv);
 #endif

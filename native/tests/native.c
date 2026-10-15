@@ -95,19 +95,20 @@ static void detector(void) {
                 chars++;
             }
         }
-    const char *edges[][2] = {{"cmd /p: next", "cmd /p: next"},
-                              {"cmd --password= next", "cmd --password= next"},
-                              {"cmd --password-file file --passwordless --Password value",
-                               "cmd --password-file file --passwordless --Password value"},
-                              {"cmd word-p word/p:secret", "cmd word-p word/p:secret"},
-                              {"cmd -p one&&cmd /p:two|cmd --password=three",
-                               "cmd -p ***&&cmd /p:***|cmd --password=*****"},
-                              {"cmd -p ab\\;cd>file", "cmd -p ******>file"},
-                              {"cmd -p\nnext", "cmd -p\nnext"},
-                              {"cmd -p \\\nsecret", "cmd -p \\\n******"},
-                              {"cmd --password \\\n  secret tail", "cmd --password \\\n  ****** tail"},
-                              {"cmd --pass \\\n\\\nsecret", "cmd --pass \\\n\\\n******"},
-                              {"cmd -p 'a\nb' next", "cmd -p '*\n*' next"}};
+    const char *edges[][2] = {
+        {"cmd /p: next", "cmd /p: next"},
+        {"cmd --password= next", "cmd --password= next"},
+        {"cmd --password-file file --passwordless --Password value",
+         "cmd --password-file file --passwordless --Password value"},
+        {"cmd word-p word/p:secret", "cmd word-p word/p:secret"},
+        {"cmd -p one&&cmd /p:two|cmd --password=three",
+         "cmd -p ***&&cmd /p:***|cmd --password=*****"},
+        {"cmd -p ab\\;cd>file", "cmd -p ******>file"},
+        {"cmd -p\nnext", "cmd -p\nnext"},
+        {"cmd -p \\\nsecret", "cmd -p \\\n******"},
+        {"cmd --password \\\n  secret tail", "cmd --password \\\n  ****** tail"},
+        {"cmd --pass \\\n\\\nsecret", "cmd --pass \\\n\\\n******"},
+        {"cmd -p 'a\nb' next", "cmd -p '*\n*' next"}};
     for (size_t i = 0; i < sizeof(edges) / sizeof(*edges); i++)
         mask_case(edges[i][0], edges[i][1], &rules);
     const char *attached[] = {"cmd -P******", "cmd -Psecret", "cmd -P******", "cmd -Psecret"};
@@ -149,8 +150,7 @@ static void screen_cases(void) {
     Screen s;
     screen_init(&s, 5, 40);
     Buffer frame = {0};
-    const char *palette =
-        "\033[33mY\033[43mB\033[93mH\033[103mI\033[38;5;200mP\033[38;2;1;2;3mT";
+    const char *palette = "\033[33mY\033[43mB\033[93mH\033[103mI\033[38;5;200mP\033[38;2;1;2;3mT";
     screen_feed(&s, palette, strlen(palette));
     screen_render(&s, &menu, &frame);
     CHECK(strstr(frame.data, "\033[33m"));
@@ -1175,8 +1175,8 @@ static void privacy_style_cases(void) {
           f);
     fclose(f);
     CHECK(!settings_load(&loaded) && loaded.history == SESSION && loaded.privacy_style == EMOJI &&
-          loaded.count == 1 && !strcmp(loaded.rules[0].flag, "-Q") &&
-          loaded.exception_count == 1 && !strcmp(loaded.exceptions[0], "custom"));
+          loaded.count == 1 && !strcmp(loaded.rules[0].flag, "-Q") && loaded.exception_count == 1 &&
+          !strcmp(loaded.exceptions[0], "custom"));
     char migrated[64];
     shortcut_label(loaded.shortcuts[SHORTCUT_MASK], migrated, sizeof(migrated));
     CHECK(!strcmp(migrated, "Alt+I"));
@@ -1262,6 +1262,31 @@ static void agile_controls(void) {
     CHECK(!strcmp(label, "Ctrl+F8"));
     buf_free(&r.pending);
     buf_free(&out);
+    {
+        const char *prompt = "\033]777;incognito;D\a\033]777;incognito;A\ap> "
+                             "\033]777;incognito;B\a";
+        Screen screen;
+        screen_init(&screen, 4, 70);
+        screen_feed(&screen, prompt, strlen(prompt));
+        screen_feed(&screen, "\033]777;incognito;N\a", 18);
+        screen_render(&screen, &m, &out);
+        CHECK(screen.manual.count == 1 && screen.manual.spans[0].active);
+        screen_resize(&screen, 5, 60, &settings);
+        CHECK(screen.manual.count == 0); /* An unused arm cannot survive a pane resize. */
+        buf_free(&out);
+        screen_free(&screen);
+
+        screen_init(&screen, 4, 70);
+        screen_feed(&screen, prompt, strlen(prompt));
+        screen_feed(&screen, "\033]777;incognito;N\aSECRET", 24);
+        screen_render(&screen, &m, &out);
+        CHECK(screen.manual.count == 1 &&
+              screen.manual.spans[0].end > screen.manual.spans[0].start);
+        screen_resize(&screen, 5, 60, &settings);
+        CHECK(screen.manual.count == 1); /* Started secrets stay protected. */
+        buf_free(&out);
+        screen_free(&screen);
+    }
     const char *marked = "\033]777;incognito;D\a\033]777;incognito;A\auser@host> "
                          "\033]777;incognito;B\arecord \033]777;incognito;M;7\a"
                          "'MANUAL_SECRET' tail\033]777;incognito;C\a\r\nOUTPUT_VISIBLE";

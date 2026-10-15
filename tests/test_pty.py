@@ -27,6 +27,18 @@ import pyte
 ROOT = Path(__file__).resolve().parents[1]
 
 
+class TerminalScreen(pyte.Screen):
+    """Accept private DSR queries emitted by tmux.
+
+    pyte 0.8.2 dispatches DEC private status reports with a keyword that its
+    base Screen method does not accept.  The tests do not emulate responses,
+    but they must still be able to observe the resulting display.
+    """
+
+    def report_device_status(self, mode, **_kwargs):
+        return super().report_device_status(mode)
+
+
 def set_window_size(fd, lines, columns):
     """Set a PTY size on Python versions before termios.tcsetwinsize()."""
     if hasattr(termios, "tcsetwinsize"):
@@ -44,6 +56,11 @@ class Session:
         self.original_tty = termios.tcgetattr(self.slave)
         env = os.environ.copy()
         env.pop("INCOGNITO_TERMINAL", None)
+        # The test runner itself may be inside tmux.  Do not let that host
+        # session disable the integration under test or redirect tmux clients
+        # to the runner's server.
+        env.pop("TMUX", None)
+        env.pop("TMUX_PANE", None)
         env["TERM"] = "xterm-256color"
         # Ubuntu's global zshrc runs compinit. Hosted runners can contain
         # completion directories that trigger an interactive security prompt,
@@ -71,7 +88,7 @@ class Session:
             stdin=self.slave, stdout=self.slave, stderr=self.slave,
             cwd=ROOT, env=env, start_new_session=True,
         )
-        self.screen = pyte.Screen(columns, lines)
+        self.screen = TerminalScreen(columns, lines)
         self.stream = pyte.ByteStream(self.screen)
         self.raw = bytearray()
         try:
@@ -145,6 +162,43 @@ class Session:
 
 
 class PtyTests(unittest.TestCase):
+    def test_version_help_and_stale_tmux_marker(self):
+        binary = os.environ.get(
+            "INCOGNITO_TERMINAL_BINARY",
+            str(ROOT / "native" / "build" / "incognito-terminal"),
+        )
+        version = subprocess.check_output([binary, "--version"], text=True)
+        self.assertEqual(version, "incognito-terminal 1.3.3\n")
+        help_text = subprocess.check_output([binary, "--help"], text=True)
+        self.assertTrue(help_text.startswith("Incognito Terminal 1.3.3\n\nKeep passwords"))
+        for section in (
+            "Usage:",
+            "Options:",
+            "History modes:",
+            "Session controls:",
+            "Examples:",
+            "More help: man incognito-terminal",
+        ):
+            self.assertIn(section, help_text)
+        self.assertNotIn("native C", version + help_text)
+
+        shell = shutil.which("zsh") or shutil.which("bash")
+        session = Session(
+            shell,
+            extra_env={
+                "INCOGNITO_TERMINAL": "1",
+                "TMUX": "/tmp/tmux-stale/default,999,0",
+            },
+        )
+        try:
+            session.send("echo STALE_MARKER_ACCEPTED\r")
+            session.wait_for("STALE_MARKER_ACCEPTED")
+            session.send(f"{binary} --clean -- {shell}\r")
+            session.wait_for("already inside a protected session")
+            self.assertIsNone(session.process.poll())
+        finally:
+            self.assertEqual(session.close(), session.original_tty)
+
     def test_bash_and_zsh_masking_and_execution(self):
         for name in ("bash", "zsh"):
             shell = shutil.which(name)

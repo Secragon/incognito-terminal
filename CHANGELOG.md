@@ -3,6 +3,36 @@
 All notable user-visible changes are recorded here. Versions follow Semantic
 Versioning.
 
+## 1.3.3 - 2026-10-15
+
+- Replace the terse command-line help with a user-focused guide to options,
+  history modes, session controls, and common launch examples.
+
+## 1.3.2 - 2026-10-15
+
+- Allow Incognito Terminal to start inside ordinary tmux panes whose server
+  retained a stale protected-session environment marker.
+- Remove the implementation label from version output and show the version at
+  the beginning of command-line help.
+
+## 1.3.1 - 2026-10-15
+
+- Cancel an unused manual-mask shortcut when a tmux pane layout changes, so a
+  later value is not concealed unexpectedly.
+- Keep manual masking active across pane layout changes once sensitive input
+  has begun.
+- Improve modified-key handling in tmux terminals that advertise extended-key
+  support.
+
+## 1.3.0 - 2026-10-15
+
+- Keep Incognito privacy controls active in tmux by protecting default panes
+  and windows in a dedicated session.
+- Support both shell-startup tmux and manual tmux launches, including detach,
+  reattach, and returning to the original Incognito shell.
+- Preserve existing tmux configuration while keeping ordinary tmux sessions
+  separate and unchanged.
+
 ## 1.2.4 - 2026-10-15
 
 - Preserve terminal profile colors for the standard ANSI foreground and

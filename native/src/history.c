@@ -40,6 +40,10 @@ void startup_cleanup(Startup *s) {
             snprintf(path, sizeof(path), "%s/%s", s->directory, names[i]);
             unlink(path);
         }
+        snprintf(path, sizeof(path), "%s/bin/tmux", s->directory);
+        unlink(path);
+        snprintf(path, sizeof(path), "%s/bin", s->directory);
+        rmdir(path);
         rmdir(s->directory);
         s->directory[0] = 0;
     }

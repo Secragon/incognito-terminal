@@ -135,6 +135,28 @@ void manual_update(Screen *s, bool arm) {
     free(hidden);
     free(refs);
 }
+/* A one-shot arm should not remain hidden across a terminal or tmux layout
+ * change. Keep spans that have started consuming a value so resizing never
+ * exposes text that is already concealed. */
+void manual_cancel_unstarted(Screen *s) {
+    ManualMask *m = &s->manual;
+    for (size_t i = 0; i < m->count;) {
+        ManualSpan *span = &m->spans[i];
+        bool started = false;
+        size_t start = MIN(span->start, m->len), end = MIN(MAX(span->end, start), m->len);
+        for (size_t p = start; p < end; p++)
+            if (m->previous[p] != ' ' && m->previous[p] != '\t') {
+                started = true;
+                break;
+            }
+        if ((span->active || span->pending) && !started) {
+            memmove(span, span + 1, (m->count - i - 1) * sizeof(*span));
+            m->count--;
+            continue;
+        }
+        i++;
+    }
+}
 void manual_arm_at(Screen *s, size_t offset) {
     manual_update(s, false);
     ManualMask *m = &s->manual;
